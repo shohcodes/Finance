@@ -4,7 +4,7 @@ from colorama import Fore, Style
 
 # styles
 def print_menu(message):
-    print(Fore.BLUE, message, Style.RESET_ALL)
+    print(Fore.LIGHTYELLOW_EX, message, Style.RESET_ALL)
 
 
 def print_error(message):

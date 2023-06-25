@@ -58,7 +58,7 @@ class AuthService:
             phone = kwargs.get('phone')
             if phone is None:
                 raise Exception("Phone cant be None!")
-            user = Users().insert_into(
+            Users().insert_into(
                 first_name=kwargs.get('first_name'),
                 last_name=kwargs.get('last_name'),
                 username=username,
@@ -89,7 +89,7 @@ class AuthService:
             if user['username'] == username:
                 found_user = user
         if found_user is None:
-            raise Exception("Receiver not found")
+            raise Exception("Receiver not found!")
         return found_user
 
 
