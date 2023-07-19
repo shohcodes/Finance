@@ -46,14 +46,14 @@ If you are not logged in, you will see the following options:
 
 If you are logged in, you will see the following options:
 - Show balance
-- Add balance
+- Top up the balance
 - Transfer money
 - Transfer history
 - Log out
 
 **LOGIN**
 
-To login, select the 'Login' option and enter your username and password when prompted.
+To log in, select the 'Login' option and enter your username and password when prompted.
 
 **REGISTER**
 

@@ -34,4 +34,20 @@ class Db:
         self.cursor.execute(query, values)
         self.connect.commit()
 
+    def update(self, **kwargs):
+        w = list(self.where.keys())
+        w.append(" ")
 
+        table_name = self.__class__.__name__.lower()
+        f = list(kwargs.keys())
+        f.append(' ')
+
+        set_fields = " = %s,".join(f).strip(', ')
+        where_fields = " = %s and ".join(w).strip('and ')
+
+        params = list(kwargs.values())
+        params.extend(list(self.where.values()))
+
+        query = f"""update {table_name} set {set_fields} where {where_fields}"""
+        self.cursor.execute(query, params)
+        self.connect.commit()

@@ -1,6 +1,7 @@
 from utils import print_info, print_error, print_menu, print_success
 from service import AuthService, FinanceService
 from exceptions import UnauthorizedException, FinanceServiceException
+from models import Transfers
 from getpass import getpass
 
 session_user: dict = None
@@ -15,7 +16,7 @@ def menu():
         print_menu("2. Register")
     else:
         print_menu("1. Show balance")
-        print_menu("2. Add balance")
+        print_menu("2. Top up balance")
         print_menu("3. Transfer Money")
         print_menu("4. Transfer History")
         print_menu("5. Log out")
@@ -39,13 +40,17 @@ def user_menu(choice):
             case "2":
                 amount = float(input("Enter amount: "))
                 finance.add_balance(session_user, amount)
+                # Transfers().update()
             case "3":
                 receiver_username = input("Enter receiver username: ")
-                receiver = auth.find_user_by_username(receiver_username)
-                amount = float(input("Enter amount: "))
-                finance.transfer_money(sender=session_user, receiver=receiver, amount=amount)
+                try:
+                    receiver = auth.find_user_by_username(receiver_username)
+                    amount = float(input("Enter amount: "))
+                    finance.transfer_money(sender=session_user, receiver=receiver, amount=amount)
+                except UnauthorizedException as e:
+                    print_error(e.message)
             case "4":
-                finance.transfer_history()
+                finance.transfer_history(session_user['id'])
             case "5":
                 session_user = None
     except FinanceServiceException as e:
@@ -62,6 +67,7 @@ def auth_menu(choice):
                 session_user = auth.login(username=username, password=password)
                 print_success("User logged in✅")
             case "2":
+                # try:
                 first_name = input("Enter first name: ")
                 last_name = input("Enter last name: ")
                 username = input("Enter username: ")
@@ -75,6 +81,8 @@ def auth_menu(choice):
                     phone=phone
                 )
                 print_success("User registered✅")
+                # except Exception as e:
+                #     print_error(e)
     except UnauthorizedException as e:
         print_error(e.message)
 

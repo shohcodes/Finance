@@ -12,7 +12,8 @@ conn = connect(
 )
 cur = conn.cursor()
 cur.execute("create table if not exists users(id serial primary key , first_name varchar(255),"
-            "last_name varchar(255), username varchar(255), password varchar(255), phone integer,"
+            "last_name varchar(255), username varchar(255) unique , password varchar(255),"
+            " phone integer unique,"
             " balance float4 default 0)")
 
 cur.execute("create table if not exists transfers(transfer_id serial primary key, sender varchar(255),"

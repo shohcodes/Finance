@@ -2,18 +2,13 @@ import datetime
 
 from exceptions import UnauthorizedException, FinanceServiceException
 from models import Users, Transfers
-from utils import print_info, generate_password, match_password, print_error
+from utils import print_info, generate_password, match_password, print_success
 
 session_user: dict = None
 
 
 class AuthService:
-    users = []
-
-    def __init__(self):
-        self.__get_data()
-
-    def __get_data(self):
+    def get_data(self):
         data = Users().select().fetchall()
         result = []
         if data:
@@ -28,11 +23,12 @@ class AuthService:
                     "balance": item[6]
                 }
                 result.append(dict_item)
-        self.users = result
+        return result
 
     def login(self, username: str, password: str):
+        users = self.get_data()
         login_user: dict = None
-        for user in self.users:
+        for user in users:
             if user['username'] == username:
                 login_user = user
                 break
@@ -48,15 +44,13 @@ class AuthService:
         check_phone = self.check_phone_unique(kwargs.get('phone'))
         if check_username and check_phone:
             username = kwargs.get('username')
-            if username is None:
+            if username == '':
                 raise Exception("Username cant be None!")
-
             password = kwargs.get('password')
-            if password is None:
+            if password == '':
                 raise Exception("Password cant be None!")
-
             phone = kwargs.get('phone')
-            if phone is None:
+            if phone == '':
                 raise Exception("Phone cant be None!")
             Users().insert_into(
                 first_name=kwargs.get('first_name'),
@@ -66,37 +60,31 @@ class AuthService:
                 phone=phone,
             )
         else:
-            raise Exception("Username and/or phone number is already taken!")
-
-    def __commit(self):
-        pass
+            raise UnauthorizedException("Username and/or phone number is already taken!")
 
     def check_username_unique(self, username: str):
-        for user in self.users:
-            if user['username'] == username:
-                return False
-            return True
+        users = self.get_data()
+        users_list = [user.get('username') for user in users]
+        return False if username in users_list else True
 
     def check_phone_unique(self, phone):
-        for user in self.users:
-            if user['phone'] == phone:
-                return False
-            return True
+        users = self.get_data()
+        phones_list = [phone.get('phone') for phone in users]
+        return False if phone in phones_list else True
 
     def find_user_by_username(self, username):
+        users = self.get_data()
         found_user = None
-        for user in self.users:
+        for user in users:
             if user['username'] == username:
                 found_user = user
         if found_user is None:
-            raise Exception("Receiver not found!")
+            raise UnauthorizedException("Receiver not found!")
         return found_user
 
 
 class FinanceService:
-    transfers = []
-
-    def __get_data(self):
+    def get_data(self):
         data = Transfers().select().fetchall()
         result = []
         if data:
@@ -111,17 +99,18 @@ class FinanceService:
                     "transfer_date": item[6]
                 }
                 result.append(dict_item)
-        self.transfers = result
+        return result
 
     def check_balance_enough(self, user: dict, amount):
         if user['balance'] < amount:
             raise FinanceServiceException("Balance is not enough")
 
     def show_balance(self, user):
-        print_info(f"Your balance {user['balance']}")
+        print_info(f"Your balance: {user['balance']}")
 
     def add_balance(self, user, amount):
         user['balance'] += amount
+        print_success('Done✅')
 
     def transfer_money(self, sender: dict, receiver: dict, amount: float):
         self.check_balance_enough(sender, amount)
@@ -137,12 +126,18 @@ class FinanceService:
             amount=amount,
             transfer_date=datetime.datetime.now()
         )
-        print_info('Done✅')
+        print_success('Done✅')
 
-    def transfer_history(self):
-        transfers = Transfers().select().fetchall()
-        if not transfers:
-            print_error("No transfers yet!")
-        else:
+    def transfer_history(self, sender_id):
+        transfers = Transfers().select(sender_id=sender_id).fetchall()
+        if transfers:
             for i in transfers:
-                print_info(i)
+                print("Transfer ID:", i[0],
+                      'Sender:', i[1],
+                      'Receiver:', i[3],
+                      'Amount:', i[5],
+                      'Date:', i[6])
+        else:
+            print_info('No transfers yet!')
+
+
